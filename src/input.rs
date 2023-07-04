@@ -1,6 +1,17 @@
 use std::io;
 use std::str::FromStr;
 
+/// Reads a line from stdin and returns the parsing of it into T.
+///
+/// Before parsing, trims the input string.
+///
+/// # Examples
+///
+/// ```no_run
+/// println!("Please enter a number: ");
+/// let num: i32 = input().unwrap_or_default();
+/// println!("Your number is: {}", num);
+/// ```
 pub fn input<T: FromStr>() -> Result<T, T::Err> {
     let mut string = String::new();
 
