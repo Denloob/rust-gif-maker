@@ -50,3 +50,29 @@ pub fn input_valid<T: FromStr>() -> T {
         }
     }
 }
+
+/// Uses [input_valid] to input T and does so until the func_condition
+/// returns true.
+///
+/// When the condition returns false, notifies the user about it.
+///
+/// # Examples
+///
+/// ```
+/// let nums = vec![1, 2, 3];
+/// let index = input_valid_and_also(|x| *x < nums.len());
+/// println!("nums[index]={}", nums[index]);
+/// ```
+pub fn input_valid_and_also<F, T: FromStr>(func_condition: F) -> T
+where
+    F: Fn(&T) -> bool,
+{
+    loop {
+        let value = input_valid::<T>();
+        if func_condition(&value) {
+            return value;
+        } else {
+            println!("Invalid input. Please try again:");
+        }
+    }
+}
