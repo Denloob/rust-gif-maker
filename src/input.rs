@@ -8,5 +8,5 @@ pub fn input<T: FromStr>() -> Result<T, T::Err> {
         .read_line(&mut string)
         .expect("Failed to read line");
 
-    string.parse()
+    string.trim().parse()
 }
