@@ -1,7 +1,9 @@
 use crate::input;
 use std::path::PathBuf;
 use unwrap_infallible::UnwrapInfallible;
+use serde::{Serialize, Deserialize};
 
+#[derive(Serialize, Deserialize)]
 pub struct Frame {
     pub name: String,
     pub path: PathBuf,
