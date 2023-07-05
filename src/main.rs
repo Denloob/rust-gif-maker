@@ -1,3 +1,4 @@
+mod filter;
 mod frame;
 mod input;
 mod project;

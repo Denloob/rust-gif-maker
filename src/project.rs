@@ -1,15 +1,19 @@
-use crate::frame::Frame;
-use crate::input;
+use crate::{
+    filter::{prompt_filter_strength, Filter},
+    frame::Frame,
+    input,
+};
 use prettytable::{format, Table};
 use question::{Answer, Question};
 use std::fmt::Display;
-use std::path::PathBuf;
 use std::fs::File;
+use std::path::PathBuf;
+use strum::IntoEnumIterator;
 use unwrap_infallible::UnwrapInfallible;
 
 pub struct Project {
     frames: Vec<Frame>,
-    // TODO: Filter filter
+    filter: Filter,
 }
 
 impl Display for Project {
@@ -51,6 +55,7 @@ impl Menu {
                     Project::change_duration_of_all_frames,
                 ),
                 ("Display Frames", |project| println!("{}", project)),
+                ("Set a Filter", Project::set_filter),
                 ("Play", Project::play),
                 ("Save Project", Project::save),
             ],
@@ -78,12 +83,18 @@ impl Display for Menu {
 
 impl Project {
     pub fn new() -> Project {
-        Project { frames: Vec::new() }
+        Project {
+            frames: Vec::new(),
+            filter: Filter::None,
+        }
     }
 
     pub fn from(file: &mut File) -> Result<Project, Box<dyn std::error::Error>> {
         let frames: Vec<Frame> = serde_json::from_reader(file)?;
-        Ok(Project { frames })
+        Ok(Project {
+            frames,
+            filter: Filter::None,
+        })
     }
 
     pub fn add_frame(&mut self) {
@@ -164,6 +175,27 @@ impl Project {
         }
     }
 
+    pub fn set_filter(&mut self) {
+        println!("Choose a filter: ");
+
+        for (index, filter) in Filter::iter().enumerate() {
+            println!(" [{}] {}", index + 1, filter);
+        }
+
+        let index = input::input_valid_and_also(|index: &usize| {
+            *index <= Filter::iter().len() && *index > 0
+        }) - 1;
+        self.filter = Filter::iter().nth(index).unwrap();
+
+        self.filter = match self.filter {
+            Filter::Blur(_) => prompt_filter_strength!(Filter::Blur),
+            Filter::Sharpen(_) => prompt_filter_strength!(Filter::Sharpen),
+            Filter::Saturate(_) => prompt_filter_strength!(Filter::Saturate),
+            Filter::Grayscale => Filter::Grayscale,
+            Filter::None => Filter::None,
+        }
+    }
+
     pub fn play(&mut self) {
         const WINDOW_NAME: &str = "Gif Maker";
 
@@ -187,6 +219,15 @@ impl Project {
                         continue;
                     }
                 };
+
+                let img = match self.filter {
+                    Filter::None => Ok(img.clone()),
+                    Filter::Grayscale => Filter::grayscale(&img),
+                    Filter::Blur(v) => Filter::blur(&img, v),
+                    Filter::Sharpen(v) => Filter::sharpen(&img, v),
+                    Filter::Saturate(v) => Filter::saturate(&img, v),
+                }
+                .expect("Applying filter failed");
 
                 let _ = opencv::highgui::imshow(WINDOW_NAME, &img);
 
