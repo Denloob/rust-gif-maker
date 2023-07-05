@@ -7,11 +7,11 @@ use serde::{Serialize, Deserialize};
 pub struct Frame {
     pub name: String,
     pub path: PathBuf,
-    pub duration: u32,
+    pub duration: u16, // u16 to easily convert into opencv's i32 delay
 }
 
 impl Frame {
-    pub fn new(name: String, path: PathBuf, duration: u32) -> Frame {
+    pub fn new(name: String, path: PathBuf, duration: u16) -> Frame {
         if !path.is_file() {
             panic!("Given path doesn't exist.");
         }

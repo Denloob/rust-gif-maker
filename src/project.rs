@@ -51,6 +51,7 @@ impl Menu {
                     Project::change_duration_of_all_frames,
                 ),
                 ("Display Frames", |project| println!("{}", project)),
+                ("Play", Project::play),
                 ("Save Project", Project::save),
             ],
         }
@@ -160,6 +161,43 @@ impl Project {
                 Err(e) => println!("Error writing to the file: {}", e),
             },
             Err(e) => println!("Error opening the file: {}", e),
+        }
+    }
+
+    pub fn play(&mut self) {
+        const WINDOW_NAME: &str = "Gif Maker";
+
+        if self.frames.is_empty() {
+            println!("No frames to display");
+            return;
+        }
+
+        opencv::highgui::named_window(WINDOW_NAME, opencv::highgui::WINDOW_AUTOSIZE)
+            .expect("Failed to create window");
+
+        loop {
+            for frame in &self.frames {
+                let img = match opencv::imgcodecs::imread(
+                    &frame.path.to_string_lossy(),
+                    opencv::imgcodecs::IMREAD_COLOR,
+                ) {
+                    Ok(img) => img,
+                    Err(e) => {
+                        println!("Failed to open {}: {}", frame.path.to_string_lossy(), e);
+                        continue;
+                    }
+                };
+
+                let _ = opencv::highgui::imshow(WINDOW_NAME, &img);
+
+                let key_was_pressed =
+                    opencv::highgui::wait_key(frame.duration.into()).unwrap_or_default() != -1;
+
+                if key_was_pressed {
+                    opencv::highgui::destroy_window(WINDOW_NAME).expect("Destroying window failed");
+                    return;
+                }
+            }
         }
     }
 }
