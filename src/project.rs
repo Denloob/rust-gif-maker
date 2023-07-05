@@ -3,8 +3,8 @@ use crate::input;
 use prettytable::{format, Table};
 use question::{Answer, Question};
 use std::fmt::Display;
-use std::fs;
 use std::path::PathBuf;
+use std::fs::File;
 use unwrap_infallible::UnwrapInfallible;
 
 pub struct Project {
@@ -149,17 +149,12 @@ impl Project {
             }
         }
 
-        match self.write_frames(&path) {
-            Ok(_) => println!("Saved"),
-            Err(e) => println!("Error: {}", e),
+        match File::create(path) {
+            Ok(file) => match serde_json::to_writer(file, &self.frames) {
+                Ok(_) => println!("Saved"),
+                Err(e) => println!("Error writing to the file: {}", e),
+            },
+            Err(e) => println!("Error opening the file: {}", e),
         }
-    }
-
-    fn write_frames(&self, path: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
-        let serialized = serde_json::to_string(&self.frames)?;
-
-        fs::write(path, serialized)?;
-
-        Ok(())
     }
 }
