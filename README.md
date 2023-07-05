@@ -1,5 +1,5 @@
 ## About
-This is a rewrite of a small C project in rust. For learning purposes.
+This is a rewrite of a [small C project](https://github.com/Denloob/c-gif-maker) in rust. For learning purposes.
 
 The project focuses on language basics.
 
