@@ -80,6 +80,11 @@ impl Project {
         Project { frames: Vec::new() }
     }
 
+    pub fn from(file: &mut File) -> Result<Project, Box<dyn std::error::Error>> {
+        let frames: Vec<Frame> = serde_json::from_reader(file)?;
+        Ok(Project { frames })
+    }
+
     pub fn add_frame(&mut self) {
         self.frames.push(Frame::from_stdin());
     }
